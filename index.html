@@ -112,10 +112,31 @@
       return day>=start && day<=end; 
     }
     function midClassFromSid(sid){ const s = String(sid).padStart(5,'0'); return Number(s.substring(1,3)); }
+    function todayKST(){
+      const nowKST = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
+      return new Date(nowKST.getFullYear(), nowKST.getMonth(), nowKST.getDate());
+    }
+    function toInputValue(d){
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,'0');
+      const dd = String(d.getDate()).padStart(2,'0');
+      return `${y}-${m}-${dd}`;
+    }
 
     function render(){
-      const selectedDate = dateInput.value ? new Date(dateInput.value) : new Date();
-      const day = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+      const selectedDate = dateInput.value
+        ? (()=>{ 
+          const [yy,mm,dd]=dateInput.value.split('-').map(Number); 
+          return new Date(yy,mm-1,dd); 
+         })()
+       : todayKST();
+      
+      const day = new Date(
+        selectedDate.getFullYear(), 
+        selectedDate.getMonth(), 
+        selectedDate.getDate()
+      );
+
       const clsSel = classInput.value;
       tbody.innerHTML=''; let rows=0;
 
@@ -161,13 +182,19 @@
       countEl.textContent = rows;
     }
 
-    document.getElementById('todayBtn').addEventListener('click',()=>{dateInput.valueAsDate=new Date(); render();});
+    document.getElementById('todayBtn').addEventListener('click',()=>{
+      const t = todayKST();
+      dateInput.value = toInputValue(t);
+      render();
+    });
+
     document.getElementById('resetBtn').addEventListener('click',()=>{dateInput.value=''; classInput.value=''; render();});
     dateInput.addEventListener('change',render);
     classInput.addEventListener('change',render);
 
-    dateInput.valueAsDate=new Date();
+    dateInput.value = toInputValue(todayKST());
     render();
+    
   </script>
 </body>
 </html>
